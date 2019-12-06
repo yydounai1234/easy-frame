@@ -1,0 +1,26 @@
+{
+  "name": "typescript-demo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "./dist/main.bundle.js",
+  "typings": "./type/easy.d.ts",
+  "scripts": {
+    "start": "./node_modules/.bin/webpack-dev-server",
+    "build": "./node_modules/.bin/webpack",
+    "doc": "api-extractor run --local --verbose",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/node": "^12.12.14",
+    "htmlparser2": "^4.0.0",
+    "webpack-dev-server": "^3.9.0"
+  },
+  "devDependencies": {
+    "ts-loader": "^6.2.1",
+    "webpack": "^4.41.2",
+    "webpack-cli": "^3.3.10",
+    "typescript": "^3.7.2"
+  }
+}

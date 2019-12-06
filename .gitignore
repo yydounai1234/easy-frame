@@ -1,0 +1,8 @@
+#dev 
+.idea
+.vscode
+.git
+
+#node_modues
+node_modules/
+pm2.json

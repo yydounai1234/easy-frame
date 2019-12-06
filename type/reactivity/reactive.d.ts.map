@@ -1,0 +1,1 @@
+{"version":3,"file":"reactive.d.ts","sourceRoot":"","sources":["../../src/reactivity/reactive.ts"],"names":[],"mappings":"AAGA,OAAO,EAAE,GAAG,EAAE,MAAM,UAAU,CAAA;AAK9B,wBAAgB,QAAQ,CAAC,MAAM,EAAE,MAAM,OAQtC;AAuCD,eAAO,MAAM,SAAS,2BAAkC,CAAA;AAExD,oBAAY,WAAW,GAAG,GAAG,CAAC,GAAG,EAAE,GAAG,CAAC,CAAA;AAEvC,wBAAgB,KAAK,CAAC,CAAC,EAAE,QAAQ,EAAE,CAAC,GAAG,CAAC,CAEvC"}

@@ -1,0 +1,19 @@
+{
+    "compileOnSave": true,
+    "compilerOptions": {
+        "alwaysStrict":true,
+        "declaration":true,
+        "declarationDir":"./type",
+        "declarationMap": true,
+        "diagnostics":true,
+        "module": "commonjs",
+        "noImplicitAny": true,
+        "removeComments": true,
+        "preserveConstEnums": true,
+        "sourceMap": true,
+        "outDir": "dist/"
+    },
+    "exclude": [
+        "test"
+    ]
+}
