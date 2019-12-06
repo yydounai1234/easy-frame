@@ -18,7 +18,7 @@
         {
           "kind": "Function",
           "canonicalReference": "typescript-demo!createApp:function(1)",
-          "docComment": "",
+          "docComment": "/**\n * The base class for create app.\n *\n * @remarks\n *\n * createApp can make us create a reactivity app component\n *\n * @param Component - app component options.\n *\n * @param Element - dom node.\n *\n * @returns Component - app\n *\n * @public\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",

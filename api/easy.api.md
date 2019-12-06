@@ -6,7 +6,7 @@
 
 // Warning: (ae-forgotten-export) The symbol "Component" needs to be exported by the entry point easy.d.ts
 //
-// @public (undocumented)
+// @public
 export function createApp(app: Component, container: Element): void;
 
 // Warning: (ae-forgotten-export) The symbol "ReactiveEffectOptions" needs to be exported by the entry point easy.d.ts

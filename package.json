@@ -9,7 +9,7 @@
     "build": "./node_modules/.bin/webpack",
     "doc": "api-extractor run --local --verbose",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "markdown": "api-documenter docs"
+    "markdown": "api-documenter down"
   },
   "author": "",
   "license": "ISC",

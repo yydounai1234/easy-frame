@@ -32,6 +32,7 @@ let contextStack: any = []
 export function createApp(app: Component, container: Element) {
   app.type = NODETYPE.APP
   patch(app, container)
+  return app
 }
 
 function patch(result: Component | Node, container: Element) {

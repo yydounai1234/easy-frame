@@ -6,6 +6,18 @@ declare interface Component {
     type: string;
 }
 
+/**
+ * The base class for create app.
+ *
+ * @remarks
+ * createApp can make us create a reactivity app component
+ *
+ * @param Component - app component options.
+ * @param Element - dom node.
+ * @returns Component - app
+ * 
+ * @public
+ */
 export declare function createApp(app: Component, container: Element): void;
 
 declare type DebuggerEvent = {

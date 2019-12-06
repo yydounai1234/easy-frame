@@ -14,5 +14,17 @@ export interface Node {
     data: string;
     easy: Component;
 }
+/**
+ * The base class for create app.
+ *
+ * @remarks
+ * createApp can make us create a reactivity app component
+ *
+ * @param Component - app component options.
+ * @param Element - dom node.
+ * @returns Component - app
+ * 
+ * @public
+ */
 export declare function createApp(app: Component, container: Element): void;
 //# sourceMappingURL=render.d.ts.map
