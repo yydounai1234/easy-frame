@@ -5,13 +5,17 @@
   "compiler": {
   },
   "apiReport": {
-    "enabled": true
+    "enabled": true,
+    "reportFileName": "easy.api.md",
+    "reportFolder": "./api/"
   },
   "docModel": {
-    "enabled": true
+    "enabled": true,
+    "apiJsonFilePath": "./api/easy.api.json"
   },
   "dtsRollup": {
-    "enabled": true
+    "enabled": true,
+    "untrimmedFilePath": "./api/easy.d.ts"
   },
   "tsdocMetadata": {
   },
