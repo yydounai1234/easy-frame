@@ -169,11 +169,9 @@ function run(effect: ReactiveEffect, fn: Function, args: unknown[]): unknown {
   if (!effectStack.includes(effect)) {
     cleanup(effect)
     try {
-      console.log('插入stack')
       effectStack.push(effect)
       return fn(...args)
     } finally {
-      console.log('弹出stack')
       effectStack.pop()
     }
   }

@@ -1,7 +1,7 @@
 import { Parser, DomHandler } from 'htmlparser2'
 
-export function parse(template:string) {
-  return new Promise((resolve, reject) => {
+export function parse(template: string) {
+  return new Promise<object>((resolve, reject) => {
     const handler = new DomHandler(
       (error, dom) => {
         if (error) {

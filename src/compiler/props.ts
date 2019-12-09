@@ -1,5 +1,6 @@
 import { startsWith } from './utils'
 import { createText, insert } from './dom'
+import { Option } from './render'
 const delimiters = [`{{`, `}}`]
 
 function patchClass(el: Element, value: string) {
@@ -13,12 +14,21 @@ function patchAttr(el: Element, key: string, value: any) {
     el.setAttribute(key, value)
   }
 }
-function patchEvent(el: Element, key:string,value:any,context:any):void {
-  (<any>el)[`on${key.slice(1)}`] = function() {
+
+function patchStyle(el: Element, value: string) {
+  const attr = value.split(';')
+  for (let i of attr) {
+    ;(<any>el).style[i.split(':')[0]] = i.split(':')[1]
+  }
+}
+
+function patchEvent(el: Element, key: string, value: string, context: Option) {
+  ;(<any>el)[`on${key.slice(1)}`] = () => {
     context.methods[value].call(context)
   }
 }
-function advancePatchText(insertText: string, el: Element) {
+
+function patchInterpolationText(insertText: string, el: Element) {
   if (insertText) {
     const text = createText(insertText)
     insert(text, el)
@@ -26,34 +36,41 @@ function advancePatchText(insertText: string, el: Element) {
   return ''
 }
 
-export function patchProps(el: Element, key: string, value: any ,context: any) {
+export function patchProps(
+  el: Element,
+  key: string,
+  value: any,
+  context: Option
+) {
   switch (true) {
     case key === 'class':
       patchClass(el, value)
-      break;
-    case (/^:/.test(key)): 
-        patchEvent(el, key,value,context)
-        break;
+      break
+    case key === 'style':
+      patchStyle(el, value)
+      break
+    case /^:/.test(key):
+      patchEvent(el, key, value, context)
   }
 }
 
-export function patchInterpolation(el: Element, result: string, context: any) {
-  // let start = 0
-  // let length = result.length
+export function patchInterpolation(
+  el: Element,
+  result: string,
+  context: Option
+) {
   let insertText = ''
   let rawResult = result
   while (rawResult.length) {
     if (startsWith(rawResult, delimiters[0])) {
-      insertText = advancePatchText(insertText, el)
+      insertText = patchInterpolationText(insertText, el)
       const [open, close] = delimiters
-      const startIndex = open.length
-      const closeIndex = rawResult.indexOf(close, open.length)
+      const startIndex: number = open.length
+      const closeIndex: number = rawResult.indexOf(close, open.length)
       if (closeIndex !== -1) {
-        console.log(context)
-        insertText = advancePatchText(
-          context.data[rawResult.slice(startIndex, closeIndex)],
-          el
-        )
+        const fn = `return ${rawResult.slice(startIndex, closeIndex)}`
+        const result = new Function(fn)
+        insertText = patchInterpolationText(result.call(context.value), el)
         rawResult = rawResult.slice(closeIndex + close.length)
       }
     } else {
@@ -61,5 +78,5 @@ export function patchInterpolation(el: Element, result: string, context: any) {
       rawResult = rawResult.slice(1)
     }
   }
-  insertText = advancePatchText(insertText, el)
+  insertText = patchInterpolationText(insertText, el)
 }

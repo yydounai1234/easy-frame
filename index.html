@@ -8,6 +8,10 @@
         .red {
             color: red
         }
+        .title{
+            font-size:24px;
+            margin-bottom:20px
+        }
     </style>
 </head>
 <script type="text/javascript" src="dist/main.bundle.js"></script>
@@ -17,24 +21,22 @@
 </body>
 <template id="easy">
     <div>
-        <div class="red">{{age}}</div>
-        <div>今年的芳龄是：{{age}}</div>
-        <div>
-            今天的天气真的贼好嘿嘿
-        </div>
+        <div class="title">年龄计算</div>
+        <div class="red" style="font-size:50px">{{this.age}}</div>
+        <div>距离80岁剩余：{{80 - this.age}}</div>
         <button id="btn" :click="add">增加年龄</button>
     </div>
 </template>
 <script>
     const App = {
-        render: '#easy',
-        data: easy.reactive({
+        template: '#easy',
+        value: easy.reactive({
             name: 'koko',
             age: 18
         }),
         methods: {
             add() {
-                this.data.age++
+                this.value.age++
             }
         }
     }

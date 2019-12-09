@@ -20,7 +20,7 @@ export interface Node {
  * @remarks
  * createApp can make us create a reactivity app component
  *
- * @param Component - app component options.
+ * @param Component app component options.
  * @param Element - dom node.
  * @returns Component - app
  * 
