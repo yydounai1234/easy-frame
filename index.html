@@ -21,16 +21,32 @@
     <div id="container"></div>
 </body>
 <template id="easy">
-    <div>
-        <div class="title">年龄计算</div>
+        <tab></tab>
+        <div>年龄计算</div>
         <div class="red" style="font-size:50px">{{this.age}}</div>
         <div>距离80岁剩余：{{80 - this.age}}</div>
         <button id="btn" :click="add">增加年龄</button>
-    </div>
+</template>
+
+<template id="tabs">
+    <ul>
+        <li>首页</li>
+        <li>个人中心</li>
+        <li>我的信息{{this.num}}</li>
+    </ul>
 </template>
 <script>
+        const Tab = {
+        template: '#tabs',
+        value: easy.reactive({
+            num: 100
+        })
+    }
     const App = {
         template: '#easy',
+        components: {
+            tab:Tab
+        },
         value: easy.reactive({
             name: 'koko',
             age: 18

@@ -1,7 +1,7 @@
 import { effect } from '../reactivity/effect'
 import { reactive } from '../reactivity/reactive'
 import { parse } from './paser'
-import { createElement, insert, querySelector } from './dom'
+import { createElement, insert, querySelector, createComment } from './dom'
 import { patchProps, patchInterpolation } from './props'
 
 const enum NODETYPE {
@@ -14,11 +14,9 @@ const enum NODETYPE {
 export interface APPOPTION {
   mixin?: Array<any>
   store?: object
-  renderProxy?: object
   onLanuch?: Function
 }
 export interface CONTEXT {
-  option: APPOPTION
   render: object
   template: string
   methods?: {
@@ -29,7 +27,13 @@ export interface CONTEXT {
   onShow?: Function
   onUpdate?: Function
   mounted: boolean
+  components?: {
+    [key: string]: CONTEXT
+  }
 }
+
+let appOption: APPOPTION = {}
+let devFragmentID = 0
 export interface ENODE extends Node {
   context: CONTEXT
   attribs?: {
@@ -49,8 +53,9 @@ export function createApp(
   if (option!.onLanuch) {
     option!.onLanuch(option)
   }
-  patchApp(option)
-  patchComponent(context, container, option)
+  appOption = option
+  patchApp()
+  patchComponent(context, container)
   return context
 }
 
@@ -58,7 +63,8 @@ function patch(
   node: ENODE,
   container: Element,
   type: NODETYPE,
-  context: CONTEXT
+  context: CONTEXT,
+  anchor?: Node
 ) {
   switch (type) {
     // case NODETYPE.COMPONENT:
@@ -66,7 +72,11 @@ function patch(
     //   patchComponent(node, container, context)
     //   break
     case NODETYPE.TAG:
-      patchElement(node, container, context)
+      if (context.components && context.components[node.name]) {
+        patchComponent(context.components[node.name], container)
+      } else {
+        patchElement(node, container, context, anchor)
+      }
       break
     case NODETYPE.TEXT:
       patchText(node, container, context)
@@ -74,45 +84,62 @@ function patch(
   }
 }
 
-function patchApp(option: APPOPTION) {
-  option.renderProxy = reactive(option)
-  option.mixin = []
-  option.store = {}
+function patchApp() {
+  appOption.mixin = []
+  appOption.store = {}
 }
 
-function patchComponent(
-  context: CONTEXT,
-  container: Element,
-  option: APPOPTION
-) {
-  context.option = option
+function patchComponent(context: CONTEXT, container: Element) {
   const template = querySelector(context.template)
+  const anchor = patchFragment(container)
   parse(template.innerHTML.trim()).then((res: ENODE[]) => {
     effect(() => {
       const mounted = context.mounted
-      if(!mounted && context!.onLoad) {
+      if (!mounted && context!.onLoad) {
         context.onLoad.call(context)
+        for (let i of res) {
+          patch(i, container, i.type, context, anchor)
+        }
+      } else {
+        // diff
+        for (let i of res) {
+          patch(i, container, i.type, context, anchor)
+        }
       }
-      container.innerHTML = ''
-      for (let i of res) {
-        patch(i, container, i.type, context)
-      }
-      if(!mounted && context!.onShow) {
+      if (!mounted && context!.onShow) {
         context.mounted = true
         context.onShow.call(context)
-      }else if(mounted && context!.onUpdate){
+      } else if (mounted && context!.onUpdate) {
         context.onUpdate.call(context)
       }
     })
   })
 }
 
-function patchElement(node: ENODE, container: Element, context: CONTEXT) {
+function patchFragment(container: Element): Comment {
+  const fragmentStartAnchor = createComment(`fragment-${devFragmentID}-start`)!
+  const fragmentEndAnchor = createComment(`fragment-${devFragmentID}-end`)!
+  devFragmentID++
+  insert(fragmentStartAnchor, container)
+  insert(fragmentEndAnchor, container)
+  return fragmentEndAnchor
+}
+
+function patchElement(
+  node: ENODE,
+  container: Element,
+  context: CONTEXT,
+  anchor?: Node
+) {
   const el = createElement(node.name)
   for (let i in node.attribs) {
     patchProps(el, i, node.attribs[i], context)
   }
-  insert(el, container)
+  if (anchor !== null) {
+    insert(el, container, anchor)
+  } else {
+    insert(el, container)
+  }
   patchChildren(node.children, el, context)
 }
 
