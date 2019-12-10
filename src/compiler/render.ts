@@ -11,76 +11,103 @@ const enum NODETYPE {
   COMPONENT = 'component'
 }
 
-export interface Option {
+export interface APPOPTION {
+  mixin?: Array<any>
+  store?: object
+  renderProxy?: object
+  onLanuch?: Function
+}
+export interface CONTEXT {
+  option: APPOPTION
   render: object
   template: string
   methods?: {
-    [key:string]:Function
+    [key: string]: Function
   }
   value?: any
-  mixin?: Array<any>
+  onLoad?: Function
+  onShow?: Function
+  onUpdate?: Function
+  mounted: boolean
 }
-export interface ENode extends Node, Option {
-  context: ENode
+export interface ENODE extends Node {
+  context: CONTEXT
   attribs?: {
     [key: string]: object
   }
   type: NODETYPE
-  renderProxy?: object
   name?: string
-  children: ENode[]
+  children: ENODE[]
   data?: string
 }
 
-export function createApp(node: ENode, container: Element): ENode {
-  patch(node, container, NODETYPE.APP, node)
-  return node
+export function createApp(
+  context: CONTEXT,
+  container: Element,
+  option: APPOPTION = {}
+): CONTEXT {
+  if (option!.onLanuch) {
+    option!.onLanuch(option)
+  }
+  patchApp(option)
+  patchComponent(context, container, option)
+  return context
 }
 
 function patch(
-  node: ENode,
+  node: ENODE,
   container: Element,
   type: NODETYPE,
-  context: Option
+  context: CONTEXT
 ) {
   switch (type) {
-    case NODETYPE.COMPONENT:
-      node.type = NODETYPE.COMPONENT
-      patchComponent(node, container, context)
-      break
+    // case NODETYPE.COMPONENT:
+    //   node.type = NODETYPE.COMPONENT
+    //   patchComponent(node, container, context)
+    //   break
     case NODETYPE.TAG:
       patchElement(node, container, context)
       break
     case NODETYPE.TEXT:
       patchText(node, container, context)
       break
-    case NODETYPE.APP:
-      node.type = NODETYPE.APP
-      patchApp(node, container, context)
   }
 }
 
-function patchApp(node: ENode, container: Element, context: Option) {
-  node.renderProxy = reactive(node)
-  node.mixin = []
-  node.context = node
-  patchComponent(node, container, context)
-} 
+function patchApp(option: APPOPTION) {
+  option.renderProxy = reactive(option)
+  option.mixin = []
+  option.store = {}
+}
 
-function patchComponent(node: ENode, container: Element, context: Option) {
-  const template = querySelector(node.template)
-  parse(template.innerHTML.trim()).then((res: ENode[]) => {
-    console.log(res)
+function patchComponent(
+  context: CONTEXT,
+  container: Element,
+  option: APPOPTION
+) {
+  context.option = option
+  const template = querySelector(context.template)
+  parse(template.innerHTML.trim()).then((res: ENODE[]) => {
     effect(() => {
+      const mounted = context.mounted
+      if(!mounted && context!.onLoad) {
+        context.onLoad.call(context)
+      }
       container.innerHTML = ''
       for (let i of res) {
         patch(i, container, i.type, context)
+      }
+      if(!mounted && context!.onShow) {
+        context.mounted = true
+        context.onShow.call(context)
+      }else if(mounted && context!.onUpdate){
+        context.onUpdate.call(context)
       }
     })
   })
 }
 
-function patchElement(node: ENode, container: Element, context: Option) {
+function patchElement(node: ENODE, container: Element, context: CONTEXT) {
   const el = createElement(node.name)
   for (let i in node.attribs) {
     patchProps(el, i, node.attribs[i], context)
@@ -90,15 +117,15 @@ function patchElement(node: ENode, container: Element, context: Option) {
 }
 
 function patchChildren(
-  children: Array<ENode>,
+  children: Array<ENODE>,
   container: Element,
-  context: Option
+  context: CONTEXT
 ) {
   for (let i of children) {
     patch(i, container, i.type, context)
   }
 }
 
-function patchText(node: ENode, container: Element, context: Option) {
+function patchText(node: ENODE, container: Element, context: CONTEXT) {
   patchInterpolation(container, node.data, context)
 }

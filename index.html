@@ -8,9 +8,10 @@
         .red {
             color: red
         }
-        .title{
-            font-size:24px;
-            margin-bottom:20px
+
+        .title {
+            font-size: 24px;
+            margin-bottom: 20px
         }
     </style>
 </head>
@@ -38,9 +39,22 @@
             add() {
                 this.value.age++
             }
+        },
+        onLoad() {
+            console.log('生命周期onLoad')
+        },
+        onShow() {
+            console.log(`生命周期onShow:${this.value.age}`)
+        },
+        onUpdate() {
+            console.log(`生命周期onUpdate:${this.value.age}`)
         }
     }
-    easy.createApp(App, document.getElementById('container'))
+    easy.createApp(App, document.getElementById('container'), {
+        onLanuch(option) {
+            console.log('生命周期onLanuch')
+        }
+    })
 </script>
 
 </html>

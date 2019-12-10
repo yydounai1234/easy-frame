@@ -1,6 +1,6 @@
 import { startsWith } from './utils'
 import { createText, insert } from './dom'
-import { Option } from './render'
+import { CONTEXT } from './render'
 const delimiters = [`{{`, `}}`]
 
 function patchClass(el: Element, value: string) {
@@ -22,7 +22,7 @@ function patchStyle(el: Element, value: string) {
   }
 }
 
-function patchEvent(el: Element, key: string, value: string, context: Option) {
+function patchEvent(el: Element, key: string, value: string, context: CONTEXT) {
   ;(<any>el)[`on${key.slice(1)}`] = () => {
     context.methods[value].call(context)
   }
@@ -40,7 +40,7 @@ export function patchProps(
   el: Element,
   key: string,
   value: any,
-  context: Option
+  context: CONTEXT
 ) {
   switch (true) {
     case key === 'class':
@@ -57,7 +57,7 @@ export function patchProps(
 export function patchInterpolation(
   el: Element,
   result: string,
-  context: Option
+  context: CONTEXT
 ) {
   let insertText = ''
   let rawResult = result
