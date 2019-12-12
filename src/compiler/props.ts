@@ -55,28 +55,26 @@ export function patchProps(
 }
 
 export function patchInterpolation(
-  el: Element,
   result: string,
   context: CONTEXT
-) {
-  let insertText = ''
+):string {
+  let resultText = ''
   let rawResult = result
   while (rawResult.length) {
     if (startsWith(rawResult, delimiters[0])) {
-      insertText = patchInterpolationText(insertText, el)
       const [open, close] = delimiters
       const startIndex: number = open.length
       const closeIndex: number = rawResult.indexOf(close, open.length)
       if (closeIndex !== -1) {
         const fn = `return ${rawResult.slice(startIndex, closeIndex)}`
         const result = new Function(fn)
-        insertText = patchInterpolationText(result.call(context.value), el)
+        resultText += result.call(context.value)
         rawResult = rawResult.slice(closeIndex + close.length)
       }
     } else {
-      insertText += rawResult[0]
+      resultText += rawResult[0]
       rawResult = rawResult.slice(1)
     }
   }
-  insertText = patchInterpolationText(insertText, el)
+  return resultText
 }

@@ -1,3 +1,3 @@
-export const  startsWith = (source: string, searchString: string): boolean => {
+export const startsWith = (source: string, searchString: string): boolean => {
   return source.startsWith(searchString)
 }

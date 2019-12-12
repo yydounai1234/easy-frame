@@ -1,7 +1,13 @@
 import { effect } from '../reactivity/effect'
 import { reactive } from '../reactivity/reactive'
 import { parse } from './paser'
-import { createElement, insert, querySelector, createComment } from './dom'
+import {
+  createElement,
+  insert,
+  querySelector,
+  createComment,
+  createText
+} from './dom'
 import { patchProps, patchInterpolation } from './props'
 
 const enum NODETYPE {
@@ -30,6 +36,7 @@ export interface CONTEXT {
   components?: {
     [key: string]: CONTEXT
   }
+  raw?: ENODE[]
 }
 
 let appOption: APPOPTION = {}
@@ -73,10 +80,8 @@ function patch(
     //   break
     case NODETYPE.TAG:
       if (context.components && context.components[node.name]) {
-        console.log('啊哈哈哈', context.components[node.name], container)
         patchComponent(context.components[node.name], container, anchor)
       } else {
-        console.log('ppppp')
         patchElement(node, container, context, anchor)
       }
       break
@@ -86,6 +91,44 @@ function patch(
   }
 }
 
+function update(n1: ENODE[], n2: ENODE[], context: CONTEXT) {
+  console.log('进行diff操作')
+  console.log(n1, n2)
+  n2.forEach((item, index) => {
+    if (item.type === NODETYPE.TAG) {
+      // this is component
+      if (context.components && context.components[item.name]) {
+        console.log('判断是否是相同组件,待完成')
+      } else {
+        // same type
+        if (n1[index] && n1[index].type === NODETYPE.TAG) {
+          console.log('继续判断他们的儿子')
+          if (item.children.length === 0) {
+            console.log('直接删除，待完成')
+          } else {
+            update(item.children, n1[index].children, context)
+          }
+        } else {
+          console.log('直接替换节点,待完成')
+        }
+      }
+    } else if (item.type === NODETYPE.TEXT) {
+      // same type
+      if (n1[index] && n1[index].type === NODETYPE.TEXT) {
+        updateText(n1[index], item,context)
+        // if (item.data !== n1[index].data) {
+        //   console.log('我就是神我就是神我就是神')
+        //   console.log(321321)
+        //   console.log('修改节点中的内容')
+        // }else {
+        //   console.log('文字内容居然相等',item.data)
+        // }
+      } else {
+        console.log('直接替换节点,待完成')
+      }
+    }
+  })
+}
 function patchApp() {
   appOption.mixin = []
   appOption.store = {}
@@ -96,25 +139,28 @@ function patchComponent(context: CONTEXT, container: Element, anchor?: Node) {
   const componentAnchor = patchFragment(container, anchor)
   parse(template.innerHTML.trim()).then((res: ENODE[]) => {
     effect(() => {
+      // context.raw = res
+      // context.prevContext = context.
       const mounted = context.mounted
-      if (!mounted && context!.onLoad) {
-        context.onLoad.call(context)
+      if (!mounted) {
+        context.mounted = true
+        if (context!.onLoad) {
+          context.onLoad.call(context)
+        }
         for (let i of res) {
-          console.log(i)
           patch(i, container, i.type, context, componentAnchor)
+        }
+        if (context!.onShow) {
+          context.onShow.call(context)
         }
       } else {
         // diff
-        for (let i of res) {
-          patch(i, container, i.type, context, componentAnchor)
+        update(context.raw, res, context)
+        if (context!.onUpdate) {
+          context.onUpdate.call(context)
         }
       }
-      if (!mounted && context!.onShow) {
-        context.mounted = true
-        context.onShow.call(context)
-      } else if (mounted && context!.onUpdate) {
-        context.onUpdate.call(context)
-      }
+      context.raw = res
     })
   })
 }
@@ -162,5 +208,15 @@ function patchChildren(
 }
 
 function patchText(node: ENODE, container: Element, context: CONTEXT) {
-  patchInterpolation(container, node.data, context)
+  const text = patchInterpolation(node.data, context)
+  if (text) {
+    const insertText = createText(text)
+    insert(insertText, container)
+  }
+}
+
+function updateText(n1: ENODE, n2: ENODE, context: CONTEXT) {
+  const text1 = patchInterpolation(n1.data, context)
+  const text2 = patchInterpolation(n2.data, context)
+  console.log(text1,text2)
 }
