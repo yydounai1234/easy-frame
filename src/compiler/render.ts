@@ -73,8 +73,10 @@ function patch(
     //   break
     case NODETYPE.TAG:
       if (context.components && context.components[node.name]) {
-        patchComponent(context.components[node.name], container)
+        console.log('啊哈哈哈', context.components[node.name], container)
+        patchComponent(context.components[node.name], container, anchor)
       } else {
+        console.log('ppppp')
         patchElement(node, container, context, anchor)
       }
       break
@@ -89,21 +91,22 @@ function patchApp() {
   appOption.store = {}
 }
 
-function patchComponent(context: CONTEXT, container: Element) {
+function patchComponent(context: CONTEXT, container: Element, anchor?: Node) {
   const template = querySelector(context.template)
-  const anchor = patchFragment(container)
+  const componentAnchor = patchFragment(container, anchor)
   parse(template.innerHTML.trim()).then((res: ENODE[]) => {
     effect(() => {
       const mounted = context.mounted
       if (!mounted && context!.onLoad) {
         context.onLoad.call(context)
         for (let i of res) {
-          patch(i, container, i.type, context, anchor)
+          console.log(i)
+          patch(i, container, i.type, context, componentAnchor)
         }
       } else {
         // diff
         for (let i of res) {
-          patch(i, container, i.type, context, anchor)
+          patch(i, container, i.type, context, componentAnchor)
         }
       }
       if (!mounted && context!.onShow) {
@@ -116,12 +119,17 @@ function patchComponent(context: CONTEXT, container: Element) {
   })
 }
 
-function patchFragment(container: Element): Comment {
+function patchFragment(container: Element, anchor?: Node): Comment {
   const fragmentStartAnchor = createComment(`fragment-${devFragmentID}-start`)!
   const fragmentEndAnchor = createComment(`fragment-${devFragmentID}-end`)!
   devFragmentID++
-  insert(fragmentStartAnchor, container)
-  insert(fragmentEndAnchor, container)
+  if (anchor !== null) {
+    insert(fragmentStartAnchor, container, anchor)
+    insert(fragmentEndAnchor, container, anchor)
+  } else {
+    insert(fragmentStartAnchor, container)
+    insert(fragmentEndAnchor, container)
+  }
   return fragmentEndAnchor
 }
 
