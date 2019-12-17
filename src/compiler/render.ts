@@ -51,8 +51,8 @@ export interface ENODE extends Node {
   name?: string
   children: ENODE[]
   data?: string
-  el?:Element
-  text?:Text
+  el?: Element
+  text?: Text
 }
 
 export function createApp(
@@ -94,7 +94,12 @@ function patch(
   }
 }
 
-function update(n1: ENODE[], n2: ENODE[], context: CONTEXT,container:Element) {
+function update(
+  n1: ENODE[],
+  n2: ENODE[],
+  context: CONTEXT,
+  container: Element
+) {
   // console.log('进行diff操作')
   // console.log(n1, n2)
   n2.forEach((item, index) => {
@@ -105,11 +110,11 @@ function update(n1: ENODE[], n2: ENODE[], context: CONTEXT,container:Element) {
       } else {
         // same type
         if (n1[index] && n1[index].type === NODETYPE.TAG) {
-          // console.log('继续判断他们的儿子')
           if (item.children.length === 0) {
-            // console.log('直接删除，待完成')
+            // delate all children node
           } else {
-            update(item.children, n1[index].children, context,container)
+            // update all children node
+            update(item.children, n1[index].children, context, container)
           }
         } else {
           // console.log('直接替换节点,待完成')
@@ -118,16 +123,12 @@ function update(n1: ENODE[], n2: ENODE[], context: CONTEXT,container:Element) {
     } else if (item.type === NODETYPE.TEXT) {
       // same type
       if (n1[index] && n1[index].type === NODETYPE.TEXT) {
+        // both all text node
         updateText(n1[index], item, context)
-        // if (item.data !== n1[index].data) {
-        //   console.log('我就是神我就是神我就是神')
-        //   console.log(321321)
-        //   console.log('修改节点中的内容')
-        // }else {
-        //   console.log('文字内容居然相等',item.data)
-        // }
+      } else if (n1[index]) {
+        // delate prev node and insert next text node
       } else {
-        console.log('直接替换节点,待完成')
+        //inpset next text node
       }
     }
   })
@@ -157,7 +158,7 @@ function patchComponent(context: CONTEXT, container: Element, anchor?: Node) {
         }
       } else {
         // diff
-        update(context.subTree, res, context,container)
+        update(context.subTree, res, context, container)
         if (context!.onUpdate) {
           context.onUpdate.call(context)
         }
@@ -187,7 +188,7 @@ function patchElement(
   context: CONTEXT,
   anchor?: Node
 ) {
-  const el = node.el = createElement(node.name)
+  const el = (node.el = createElement(node.name))
   for (let i in node.attribs) {
     patchProps(el, i, node.attribs[i], context)
   }
@@ -213,17 +214,19 @@ function patchText(node: ENODE, container: Element, context: CONTEXT) {
   const text = patchInterpolation(node.data, context)
   if (text) {
     node.el = container
-    const insertText  = node.text = createText(text)
+    const insertText = (node.text = createText(text))
     insert(insertText, container)
   }
 }
 
 function updateText(n1: ENODE, n2: ENODE, context: CONTEXT) {
-  // const text1 = patchInterpolation(n1.data, context)
-  const text2 = patchInterpolation(n2.data, context)
-  
-  const insertText = createText(text2)
+  const text = patchInterpolation(n2.data, context)
   n2.el = n1!.el
-  replace(n1.text,insertText,n1.el)
-  n2.text = insertText
+  if (n1.text.nodeValue === text) {
+    n2.text = n1!.text
+  } else {
+    const insertText = createText(text)
+    replace(n1.text, insertText, n1.el)
+    n2.text = insertText
+  }
 }
