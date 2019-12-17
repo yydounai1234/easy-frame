@@ -6,7 +6,8 @@ import {
   insert,
   querySelector,
   createComment,
-  createText
+  createText,
+  replace
 } from './dom'
 import { patchProps, patchInterpolation } from './props'
 
@@ -36,7 +37,7 @@ export interface CONTEXT {
   components?: {
     [key: string]: CONTEXT
   }
-  raw?: ENODE[]
+  subTree?: ENODE[]
 }
 
 let appOption: APPOPTION = {}
@@ -50,6 +51,8 @@ export interface ENODE extends Node {
   name?: string
   children: ENODE[]
   data?: string
+  el?:Element
+  text?:Text
 }
 
 export function createApp(
@@ -91,31 +94,31 @@ function patch(
   }
 }
 
-function update(n1: ENODE[], n2: ENODE[], context: CONTEXT) {
-  console.log('进行diff操作')
-  console.log(n1, n2)
+function update(n1: ENODE[], n2: ENODE[], context: CONTEXT,container:Element) {
+  // console.log('进行diff操作')
+  // console.log(n1, n2)
   n2.forEach((item, index) => {
     if (item.type === NODETYPE.TAG) {
       // this is component
       if (context.components && context.components[item.name]) {
-        console.log('判断是否是相同组件,待完成')
+        // console.log('判断是否是相同组件并且prop相同,待完成')
       } else {
         // same type
         if (n1[index] && n1[index].type === NODETYPE.TAG) {
-          console.log('继续判断他们的儿子')
+          // console.log('继续判断他们的儿子')
           if (item.children.length === 0) {
-            console.log('直接删除，待完成')
+            // console.log('直接删除，待完成')
           } else {
-            update(item.children, n1[index].children, context)
+            update(item.children, n1[index].children, context,container)
           }
         } else {
-          console.log('直接替换节点,待完成')
+          // console.log('直接替换节点,待完成')
         }
       }
     } else if (item.type === NODETYPE.TEXT) {
       // same type
       if (n1[index] && n1[index].type === NODETYPE.TEXT) {
-        updateText(n1[index], item,context)
+        updateText(n1[index], item, context)
         // if (item.data !== n1[index].data) {
         //   console.log('我就是神我就是神我就是神')
         //   console.log(321321)
@@ -139,7 +142,6 @@ function patchComponent(context: CONTEXT, container: Element, anchor?: Node) {
   const componentAnchor = patchFragment(container, anchor)
   parse(template.innerHTML.trim()).then((res: ENODE[]) => {
     effect(() => {
-      // context.raw = res
       // context.prevContext = context.
       const mounted = context.mounted
       if (!mounted) {
@@ -155,12 +157,12 @@ function patchComponent(context: CONTEXT, container: Element, anchor?: Node) {
         }
       } else {
         // diff
-        update(context.raw, res, context)
+        update(context.subTree, res, context,container)
         if (context!.onUpdate) {
           context.onUpdate.call(context)
         }
       }
-      context.raw = res
+      context.subTree = res
     })
   })
 }
@@ -185,7 +187,7 @@ function patchElement(
   context: CONTEXT,
   anchor?: Node
 ) {
-  const el = createElement(node.name)
+  const el = node.el = createElement(node.name)
   for (let i in node.attribs) {
     patchProps(el, i, node.attribs[i], context)
   }
@@ -210,13 +212,18 @@ function patchChildren(
 function patchText(node: ENODE, container: Element, context: CONTEXT) {
   const text = patchInterpolation(node.data, context)
   if (text) {
-    const insertText = createText(text)
+    node.el = container
+    const insertText  = node.text = createText(text)
     insert(insertText, container)
   }
 }
 
 function updateText(n1: ENODE, n2: ENODE, context: CONTEXT) {
-  const text1 = patchInterpolation(n1.data, context)
+  // const text1 = patchInterpolation(n1.data, context)
   const text2 = patchInterpolation(n2.data, context)
-  console.log(text1,text2)
+  
+  const insertText = createText(text2)
+  n2.el = n1!.el
+  replace(n1.text,insertText,n1.el)
+  n2.text = insertText
 }
