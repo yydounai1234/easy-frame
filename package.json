@@ -16,7 +16,7 @@
   "dependencies": {
     "@types/node": "^12.12.14",
     "htmlparser2": "^4.0.0",
-    "webpack-dev-server": "^3.9.0"
+    "webpack-dev-server": "^4.15.1"
   },
   "devDependencies": {
     "ts-loader": "^9.4.2",
